@@ -1,0 +1,27 @@
+grammar org.xtext.example.projection.ProjectionMainParser with org.xtext.example.projection.Projection //org.eclipse.xtext.common.Terminals
+
+generate projectionMainParser "http://www.xtext.org/example/projection/ProjectionMainParser"
+
+Model:
+    projection_name=projection_name | projection_component=projection_component |
+   	layer_specification=layer_specification | description=description | 
+   	capability=capability | category=category | service_group=service_group | 
+   	include_fragment=include_fragment | override=override | 
+   	overtake=overtake | singleton_set_definition | 
+   	entity_set_definition
+   ;
+
+dynamic_projection_item
+   : 'dynamic' dynamic_projection_item_dynamic_name=ID '(' ')' ';'
+   ;
+entity_set_definition
+   : ( dynamic_component_dependency=dynamic_component_dependency )* 'entityset' entity_set_definition_entity_set_name=ID 'for' entity_set_definition_reference_object_name=ID ( '{' 'abc' | 'def' '}' | ';' )
+   ;
+
+singleton_set_definition
+   : ( dynamic_component_dependency=dynamic_component_dependency )* 'singleton' singleton_set_definition_singleton_name=ID 'for' singleton_set_definition_reference_object_name=ID 
+   ;
+   
+offline_filter_definition
+   : 'offlinefilter' '=' '[' x=Projection::offline_expression ']' ';'
+   ;

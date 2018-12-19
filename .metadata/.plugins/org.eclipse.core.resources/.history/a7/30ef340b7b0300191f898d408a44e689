@@ -1,0 +1,230 @@
+grammar org.xtext.example.projection.Projection with org.eclipse.xtext.common.Terminals
+
+generate projection "http://www.xtext.org/example/projection/Projection"
+
+grammar org.xtext.example.projection.Projection with org.eclipse.xtext.common.Terminals //org.xtext.example.projection.ProjectionMainParser
+
+generate projection "http://www.xtext.org/example/projection/Projection"
+
+Domainmodel:
+	elements+=projection_name elements+=projection_component elements+=layer_specification
+	elements+=description (elements+=MainElement)*
+;
+
+MainElement:
+	capability | category | service_group |
+	include_fragment | override | overtake 
+;
+projection_name
+   : "projection" NewProjection=ID ';'
+   ;
+
+projection_component
+   : 'component' ComponentName=ID ';'
+   ;
+
+layer_specification
+   : 'layer' LayerName=ID ';'
+   ;
+
+description
+   : keyword='description' text=STRING ';'
+   ;
+
+
+capability
+   : keyword='capability' alt=( 'Online' | 'Offline' ) ';'
+   ;
+
+
+category
+   : keyword='category' alt=( 'Integration' | 'ExternalB2B' | 'Users' ) ';'
+   ;
+
+
+service_group
+   : keyword='servicegroup' alt=( 'Mobility' | 'Reporting' ) ';'
+   ;
+
+
+include_fragment
+   : ( dynamic_component_dependency=dynamic_component_dependency )* keyword='include' keyword2='fragment' FragmentToIncludeName=ID ';'
+   ;
+
+override
+   : annotation='@Override'
+   ;
+
+
+overtake
+   : annotation='@Overtake' LayerName=ID
+   ;
+   
+terminal ID
+   : ('A'..'Z') ('A'..'Z'|'a'..'z'|'0'..'9'|'_'|'$'|'#')*
+   ;
+
+terminal REGION_COMMENT
+   : ( '---' ('-')+ (' ') (('A'..'Z'|'0'..'9')+ (' '))+ ('-')+ )
+ 
+   ;
+
+LINE_COMMENT
+   : ( '--' ('\r'|'\n')* )  
+ 
+   ;
+
+LINE_COMMENT2
+   : ( '//' ('!'|'?'|'='|'\r'|'\n')? ('\r'|'\n')* )  
+ 
+   ;
+
+terminal BLOCK_COMMENT
+   : '/*' .* '*/'  
+ 
+   ;
+
+ALERT_LINE_COMMENT
+   : ( '//!' ('\r'|'\n')* )  
+ 
+   ;
+
+QUESTION_LINE_COMMENT
+   : ( '//?' ('\r'|'\n')* )  
+ 
+   ;
+
+GOOD_LINE_COMMENT
+   : ( '//=' ('\r'|'\n')* )  
+ 
+   ;
+
+CHARACTER
+   : ('\'') ('\'') ('\'')
+ 
+   ;
+
+terminal TIME
+   : ( ('0'..'9')+ ':' ('0'..'9')+ )
+ 
+   ;
+
+terminal STRING
+   : '"' ( ('\\'|'"') | ('\\' '"'))* '"'
+ 
+   ;
+   
+terminal CAMELCASE_IDENTIFIER
+   : ('a'..'z') ('A'..'Z'|'a'..'z'|'0'..'9'|'_'|'$'|'#')*
+ 
+   ;
+
+terminal INTEGER
+   : ('0'..'9')+
+ 
+   ;
+
+terminal DECIMAL
+   : ( ('0'..'9')+ '.' ('0'..'9')+ )
+ 
+   ;
+
+WHITESPACE
+   : (' '|'\t')+  
+ 
+   ;
+
+LINE_BREAK
+   : ('\r'|'\n')+  
+ 
+   ;
+
+terminal ERROR_CHARACTER
+    : .
+    ;
+    
+//OfflineExpressionParser
+
+offline_expression
+   : offline_or_expression=offline_or_expression
+   ;
+
+offline_or_expression
+   : offline_and_expression=offline_and_expression ( 'or' offline_and_expression2=offline_and_expression )*
+   ;
+
+offline_and_expression
+   : offline_equals_expression=offline_equals_expression ( 'and' offline_equals_expression2=offline_equals_expression )*
+   ;
+
+offline_equals_expression
+   : offline_not_equals_expression=offline_not_equals_expression ( '=' offline_not_equals_expression2=offline_not_equals_expression )*
+   ;
+
+offline_not_equals_expression
+   : offline_greater_expression=offline_greater_expression ( '!=' offline_greater_expression2=offline_greater_expression )*
+   ;
+
+offline_greater_expression
+   : offline_less_than_equals_expression=offline_less_than_equals_expression ( '>' offline_less_than_equals_expression2=offline_less_than_equals_expression )*
+   ;
+
+offline_less_than_equals_expression
+   : offline_greater_equals_expression=offline_greater_equals_expression ( '<=' offline_greater_equals_expression2=offline_greater_equals_expression )*
+   ;
+
+offline_greater_equals_expression
+   : offline_less_than_expression=offline_less_than_expression ( '>=' offline_less_than_expression2=offline_less_than_expression )*
+   ;
+
+offline_less_than_expression
+   : offline_subtraction_expression=offline_subtraction_expression ( '<' offline_subtraction_expression2=offline_subtraction_expression )*
+   ;
+
+offline_subtraction_expression
+   : offline_addition_expression=offline_addition_expression ( '-' offline_addition_expression2=offline_addition_expression )*
+   ;
+
+offline_addition_expression
+   : offline_multiplication_expression=offline_multiplication_expression ( '+' offline_multiplication_expression2=offline_multiplication_expression )*
+   ;
+
+offline_multiplication_expression
+   : offline_division_expression=offline_division_expression ( '*' offline_division_expression2=offline_division_expression )*
+   ;
+
+offline_division_expression
+   : offline_mod_expression=offline_mod_expression ( '/' offline_mod_expression2=offline_mod_expression)*
+   ;
+
+offline_mod_expression
+   : offline_in_expression=offline_in_expression ( '%' offline_in_expression2=offline_in_expression )*
+   ;
+
+offline_in_expression
+   : ( offline_not_expression=offline_not_expression ( 'in' offline_not_expression2=offline_not_expression )* )
+   ;
+
+offline_not_expression
+   : ( '!' )? offline_boolean_expression=offline_boolean_expression
+   ;
+
+offline_boolean_expression
+   : ( offline_method_call_expression=offline_method_call_expression | alt=( 'true' | 'false' ) )
+   ;
+
+offline_method_call_expression
+   : ( offline_expression_atom=offline_expression_atom | ( offline_method_call_expression_referenced_name=offline_method_call_expression_referenced_name ( '(' ')' | '(' offline_expression=offline_expression ( ',' offline_expression2=offline_expression )* ')' )* ) )
+   ;
+
+offline_method_call_expression_referenced_name
+   : ( 'record' '.' )? ( identifier | CAMELCASE_IDENTIFIER ) ( '.' ( identifier | CAMELCASE_IDENTIFIER ) )*
+   ;
+
+offline_expression_atom
+   : ( '(' offline_expression=offline_expression ( ',' offline_expression2=offline_expression )* ')' | ( '-' )? INTEGER | ( '-' )? DECIMAL | STRING | offline_expression_atom_reference_name=offline_expression_atom_reference_name | 'null' )
+   ;
+
+offline_expression_atom_reference_name
+   : ( 'record' '.' )? ( identifier | CAMELCASE_IDENTIFIER ) ( '.' ( identifier | CAMELCASE_IDENTIFIER ) )*
+   ;
